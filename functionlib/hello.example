@@ -1,0 +1,6 @@
+#!/bin/bash
+hello(){
+    echo "Now is the function hello"
+    echo "hello $1"
+    return
+}

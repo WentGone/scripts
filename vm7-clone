@@ -1,0 +1,54 @@
+#!/bin/bash
+
+img_dir=/var/lib/libvirt/images
+basevm=template7.5
+
+read -p "Enter VM number: " num
+
+if [ ${num} -le 9 ]; then
+	num=0${num}
+fi
+
+if [ -z "${num}" ]; then
+	echo "You Must Input a number."
+	exit 65
+elif [ $(echo ${num}*1 | bc) = 0 ]; then
+	echo "You Must Input a number."
+	exit 66
+elif [ ${num} -lt 1 -o ${num} -gt 99 ]; then
+	echo "The Number Which You Input Is Out of Range."
+	exit 67
+fi
+
+newvm=rh7.5_node${num}
+
+if [ -e ${img_dir}/${newvm}.qcow2 ]; then
+	echo "${newvm}.qcow2 is exists."
+	exit 68
+fi
+
+echo -en "Creating Virtual Machine disk image...\t"
+qemu-img create -f qcow2 -b ${img_dir}/.${basevm}.qcow2 ${img_dir}/${newvm}.qcow2 &> /dev/null
+if [ $? -eq 0 ]; then
+	echo -e "\e[32;1m[OK]\e[0m"
+else
+	echo "created ${newvm}.qcow2 failed.."
+	exit 69
+fi
+
+cat ${img_dir}/.${basevm}.xml > /tmp/myvm7.xml
+sed -ri "/<name>/s/template7.5/${newvm}/" /tmp/myvm7.xml
+sed -ri "/uuid/s/(<uuid>)(.*)(<\/uuid>)/\1$(uuidgen)\3/" /tmp/myvm7.xml
+sed -ri "/template7.5.qcow2/s/.${basevm}/${newvm}/" /tmp/myvm7.xml
+sed -ri "/aa:ab/s/aa:ab/aa:${num}/" /tmp/myvm7.xml
+sed -ri "/bb:ab/s/bb:ab/bb:${num}/" /tmp/myvm7.xml
+sed -ri "/cc:ab/s/cc:ab/cc:${num}/" /tmp/myvm7.xml
+sed -ri "/dd:ab/s/dd:ab/dd:${num}/" /tmp/myvm7.xml
+
+virsh define /tmp/myvm7.xml > /dev/null
+if [ $? -eq 0 ]; then
+	echo -e "created ${newvm}\t\t\033[32;1m[ok]\033[0m"
+else 
+	echo "define ${newvm} failed .."
+	exit 70
+fi

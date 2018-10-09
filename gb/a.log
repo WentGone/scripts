@@ -1,0 +1,21 @@
+spawn ssh root@192.168.4.1
+The authenticity of host '192.168.4.1 (192.168.4.1)' can't be established.
+ECDSA key fingerprint is 32:98:3f:a8:16:1d:7e:34:b7:dc:6e:d4:cd:4b:a2:ed.
+Are you sure you want to continue connecting (yes/no)? yes
+Warning: Permanently added '192.168.4.1' (ECDSA) to the list of known hosts.
+root@192.168.4.1's password: 
+X11 forwarding request failed on channel 0
+Last login: Wed Mar 28 09:48:46 2018 from 192.168.4.254
+]0;root@node1:~[?1034h[root@node1 ~]# echo hello
+hello
+]0;root@node1:~[root@node1 ~]# spawn ssh root@192.168.4.2
+The authenticity of host '192.168.4.2 (192.168.4.2)' can't be established.
+ECDSA key fingerprint is 32:98:3f:a8:16:1d:7e:34:b7:dc:6e:d4:cd:4b:a2:ed.
+Are you sure you want to continue connecting (yes/no)? yes
+Warning: Permanently added '192.168.4.2' (ECDSA) to the list of known hosts.
+root@192.168.4.2's password: 
+X11 forwarding request failed on channel 0
+Last login: Wed Mar 28 09:48:46 2018 from 192.168.4.254
+]0;root@node2:~[?1034h[root@node2 ~]# echo hello
+hello
+]0;root@node2:~[root@node2 ~]# 
