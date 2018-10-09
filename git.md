@@ -18,3 +18,8 @@
     git push -u origin master
     如果报错，则用
     git push -u origin +master #强制上传
+
+如何实现push的时候免交互
+git config credential.helper store
+git push origin master
+
