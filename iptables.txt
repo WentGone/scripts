@@ -1,0 +1,10 @@
+iptables的四表五链说明
+iptables由两部分组成，framework和rules utils
+四表：filter/nat/mangle/raw
+五链：
+
+四表：
+filter：存储过滤规则
+nat：地址转换规则
+raw：跟踪规则
+mangle：
