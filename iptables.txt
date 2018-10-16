@@ -45,7 +45,7 @@ iptables -t 表名 选项(增删改查) 链名 条件 -j 处理动作
 
 链管理：
 -F：清空防火墙规则
--P：指定链的默认规则        iptables -t filter -P FORWARD -j DROP
+-P：指定链的默认规则(默认规则只能是ACCEPT或者DROP,不能是REJECT）        iptables -t filter -P FORWARD -j DROP
 
 规则管理：
 -A：向指定的链中追加新的规则
@@ -53,7 +53,9 @@ iptables -t 表名 选项(增删改查) 链名 条件 -j 处理动作
 -D：删除链上的指定规则
 -R：代替指定链上的指定规则
 
-查看规则：-nL
+查看规则：
+-nL:列出规则
+--line-numbers:显示规则编号
 
 匹配条件：
 ！表示取反
@@ -72,7 +74,7 @@ iptables -t 表名 选项(增删改查) 链名 条件 -j 处理动作
 --icmp-type：ping请求类型
 
 处理方法：
-REJECT：拒绝，查看数据包
-DROP：直接丢弃，不查看数据包
+REJECT：拒绝，查看数据包(必要时作出回应，如ping命令的时候返回Destination Port Unreachable）
+DROP：直接丢弃，不查看数据包（不作出任何回应，如ping命令的时候直接卡死终端）
 ACCEPT：接受
 LOG：不拒绝也不允许，只记录日志，如果有其他规则则按照其他规则处理，没有其他规则按照默认规则处理，日志记录/var/log/message
