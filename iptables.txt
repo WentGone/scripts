@@ -1,10 +1,78 @@
 iptables的四表五链说明
 iptables由两部分组成，framework和rules utils
 四表：filter/nat/mangle/raw
-五链：
+五链：PREROUTING/INPUT/FORWARD/OUTPUT/POSTROUTING
+防火墙规则是匹配即停止，所以防火墙规则的顺序极其重要，默认规则的优先级最低
 
 四表：
 filter：存储过滤规则
 nat：地址转换规则
-raw：跟踪规则
-mangle：
+raw：跟踪规则,很消耗资源
+mangle：拆解修改重新封装数据报文
+
+raw表和mangle表很少应用
+
+五链：
+PREROUTING：数据包进入路由器之前
+INPUT：目的地为本机地址
+FORWARD：实现转发
+OUTPUT：原地址为本机，向外发送数据
+POSTROUTING：发送到网卡之前
+
+
+           链名                     条件                                    处理办法
+                    源地址/源端口/目标地址/目标端口/协议。。。          DROP/ACCEPT/REJECT/LOG
+        |--INPUT    （别人访问我）
+        |
+filter--|--FORWARD  （数据包经过我）
+        |
+        |--OUTPUT   （我访问别人）
+
+
+
+
+     |-PREROUTING       （数据进入路由器之前）
+nat--|
+     |-POSTROUTING      （数据通过路由器之后）
+
+
+
+
+防火墙命令格式
+iptables -t 表名 选项 链名 条件 -j 处理动作
+
+常用选项：
+
+链管理：
+-F：清空防火墙规则
+-P：指定链的默认规则        iptables -t filter -P FORWARD -j DROP
+
+规则管理：
+-A：向指定的链中追加新的规则
+-I：向指定的链中的指定位置插入新的规则
+-D：删除链上的指定规则
+-R：代替指定链上的指定规则
+
+查看规则：-nL
+
+匹配条件：
+！表示取反
+
+基本条件：
+-s：源地址ip
+-d：目标地址ip
+-p：协议（tcp/udp/icmp）
+-i：数据包流入的网卡（接口）
+-o：数据包流出的网卡（接口）
+
+扩展条件：
+-m match_name：匹配模块：tcp/state/multiport
+--dport port：目标端口
+--sport port：源端口
+--icmp-type：ping请求类型
+
+处理方法：
+REJECT：拒绝，查看数据包
+DROP：直接丢弃，不查看数据包
+ACCEPT：接受
+LOG：不拒绝也不允许，只记录日志，如果有其他规则则按照其他规则处理，没有其他规则按照默认规则处理，日志记录/var/log/message
