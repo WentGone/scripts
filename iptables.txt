@@ -1,5 +1,10 @@
 iptables的四表五链说明
+
 iptables由两部分组成，framework和rules utils
+按照保护对象不同，分为主机型防火墙与网络型防火墙
+主机型防火墙主要是保护本机（过滤威胁本机的数据包）
+网络型防火墙主要是保护后面的服务器（如web/ftp等服务器）
+
 四表：filter/nat/mangle/raw
 五链：PREROUTING/INPUT/FORWARD/OUTPUT/POSTROUTING
 防火墙规则是匹配即停止，所以防火墙规则的顺序极其重要，默认规则的优先级最低
