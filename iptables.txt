@@ -83,3 +83,21 @@ REJECT：拒绝，查看数据包(必要时作出回应，如ping命令的时候
 DROP：直接丢弃，不查看数据包（不作出任何回应，如ping命令的时候直接卡死终端）
 ACCEPT：接受
 LOG：不拒绝也不允许，只记录日志，如果有其他规则则按照其他规则处理，没有其他规则按照默认规则处理，日志记录/var/log/message
+
+
+地址转换案例：
+
+源地址转换：企业内网连接外网
+iptables -t nat -I POSTROUTING -s 192.168.4.0/24 -p tcp -o interface -j SNAT --to-source 192.168.2.1
+--to-source是企业路由器的公网ip地址
+iptables -t nat -I POSTROUTING -S 192.168.4.0/24 -p tcp -o interface -j MASQUERADE
+MASQUERADE是地址伪装，仅应用在SNAT场景中，用于自动获取公网ip地址
+注意：如果有多个网卡的时候需要指定数据包流出接口,内网主机的网关和DNS
+
+目标地址转换：企业内网web服务器发布
+iptables -t nat -I PREROUTING -d 192.168.4.1 -p tcp --dport 80 -j DNAT --to-destination 192.168.2.2:80
+-d是企业路由器公网ip地址
+--to-destination是企业内网web服务器地址，用户访问的时候访问公网地址即可拿到内网web页面
+
+保存规则：
+不能用iptables-save命令，用service iptables save，看到提示把规则保存到iptables: Saving firewall rules to /etc/sysconfig/iptables:[  确定  ]即可，重启服务或者机器规则都在
