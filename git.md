@@ -1,3 +1,6 @@
+我的github
+用户名：yingxingtianxia
+密码：spandy910827ying
 第一步
     在github网站上创建一个可用的仓库
 第二步
