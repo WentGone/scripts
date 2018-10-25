@@ -1,0 +1,103 @@
+iptables的四表五链说明
+
+iptables由两部分组成，framework和rules utils
+按照保护对象不同，分为主机型防火墙与网络型防火墙
+主机型防火墙主要是保护本机（过滤威胁本机的数据包）
+网络型防火墙主要是保护后面的服务器（如web/ftp等服务器）
+
+四表：filter/nat/mangle/raw
+五链：PREROUTING/INPUT/FORWARD/OUTPUT/POSTROUTING
+防火墙规则是匹配即停止，所以防火墙规则的顺序极其重要，默认规则的优先级最低
+
+四表：
+filter：存储过滤规则
+nat：地址转换规则
+raw：跟踪规则,很消耗资源
+mangle：拆解修改重新封装数据报文
+
+raw表和mangle表很少应用
+
+五链：
+PREROUTING：数据包进入路由器之前
+INPUT：目的地为本机地址
+FORWARD：实现转发
+OUTPUT：原地址为本机，向外发送数据
+POSTROUTING：发送到网卡之前
+
+
+           链名                     条件                                    处理办法
+                    源地址/源端口/目标地址/目标端口/协议。。。          DROP/ACCEPT/REJECT/LOG
+        |--INPUT    （别人访问我）
+        |
+filter--|--FORWARD  （数据包经过我）
+        |
+        |--OUTPUT   （我访问别人）
+
+
+
+
+     |-PREROUTING       （数据进入路由器之前）
+nat--|
+     |-POSTROUTING      （数据通过路由器之后）
+
+
+
+
+防火墙命令格式
+iptables -t 表名 选项(增删改查) 链名 条件 -j 处理动作
+
+常用选项：
+
+链管理：
+-F：清空防火墙规则
+-P：指定链的默认规则(默认规则只能是ACCEPT或者DROP,不能是REJECT）        iptables -t filter -P FORWARD -j DROP
+
+规则管理：
+-A：向指定的链中追加新的规则
+-I：向指定的链中的指定位置插入新的规则
+-D：删除链上的指定规则
+-R：代替指定链上的指定规则
+
+查看规则：
+-nL:列出规则
+--line-numbers:显示规则编号
+
+匹配条件：
+！表示取反
+
+基本条件：
+-s：源地址ip
+-d：目标地址ip
+-p：协议（tcp/udp/icmp）
+-i：数据包流入的网卡（接口）
+-o：数据包流出的网卡（接口）
+
+扩展条件：
+-m match_name：匹配模块：tcp/state/multiport
+--dport port：目标端口
+--sport port：源端口
+--icmp-type：ping请求类型
+
+处理方法：
+REJECT：拒绝，查看数据包(必要时作出回应，如ping命令的时候返回Destination Port Unreachable）
+DROP：直接丢弃，不查看数据包（不作出任何回应，如ping命令的时候直接卡死终端）
+ACCEPT：接受
+LOG：不拒绝也不允许，只记录日志，如果有其他规则则按照其他规则处理，没有其他规则按照默认规则处理，日志记录/var/log/message
+
+
+地址转换案例：
+
+源地址转换：企业内网连接外网
+iptables -t nat -I POSTROUTING -s 192.168.4.0/24 -p tcp -o interface -j SNAT --to-source 192.168.2.1
+--to-source是企业路由器的公网ip地址
+iptables -t nat -I POSTROUTING -S 192.168.4.0/24 -p tcp -o interface -j MASQUERADE
+MASQUERADE是地址伪装，仅应用在SNAT场景中，用于自动获取公网ip地址
+注意：如果有多个网卡的时候需要指定数据包流出接口,内网主机的网关和DNS
+
+目标地址转换：企业内网web服务器发布
+iptables -t nat -I PREROUTING -d 192.168.4.1 -p tcp --dport 80 -j DNAT --to-destination 192.168.2.2:80
+-d是企业路由器公网ip地址
+--to-destination是企业内网web服务器地址，用户访问的时候访问公网地址即可拿到内网web页面
+
+保存规则：
+不能用iptables-save命令，用service iptables save，看到提示把规则保存到iptables: Saving firewall rules to /etc/sysconfig/iptables:[  确定  ]即可，重启服务或者机器规则都在
