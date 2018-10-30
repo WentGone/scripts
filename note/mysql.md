@@ -65,8 +65,46 @@ RDBMS--> relationship database manager system
                                     |-应用于innodb表
 
 
-创建index索引：create index 索引名 on 表名（字段名）;
-查看index索引：show index from 表名\G；
-删除index索引：drop index 索引名 on 表名;
+查询条件：
 
+            |-数字类型:= != > >= < <=
+            |
+            |           |- = !=（符号右边需要用双引号括起来）
+            |-字符类型--|
+            |           |-is null ; is not null(空和非空)
+            |
+            |           |-and 与
+            |           |-or  或
+基础条件  --|-逻辑比较--|
+            |           |-not ！非
+            |           |-()提高优先级
+            |
+            |           |-in、not in
+            |-范围内  --|-between..and..
+                        |-distinct （去掉重复） select distinct name from stu_table
 
+                            |-_匹配单个字符
+            |-模糊匹配(字符)|
+            |               |-%匹配0个或多个字符(%可以匹配空白字符,但是不能匹配null)
+            |
+            |               |-^ -|
+            |               |-$ -|  
+            |-正则表达式  --|-. -|--正则元字符
+高级条件  --|               |-[]-|
+            |               |-* -|
+            |
+            |               |-+-*/(加减乘除)
+            |-四则运算(数字)|
+                            |-%(取余)
+            
+                            |-avg()
+                            |-sum()
+            |-聚集函数    --|-min()
+            |               |-max()
+            |               |-count()
+            |
+            |-排序        --|-order by 字段名 asc|desc
+查询结果操作|
+            |-分组        --|-group by 字段名
+            |
+            |-过滤        --|-HAVING 条件表达式
