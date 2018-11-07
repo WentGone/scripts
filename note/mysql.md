@@ -222,8 +222,15 @@ binlog日志：记录除查询操作外的sql命令的二进制日志
 binlog日志--|-row      -|-不记录sql语句的上下文信息
             |-mixed    -|-混合使用
 
+刷新binlog日志的方法：重启服务、flush logs
+binlog日志启用则为增量备份
 
+XtraDB是percona开发的适用于生产环境的在线热备引擎，可以理解为增强版的InnoDB
 
+            |-在线热备份工具，不锁表，适合生产环境
+XtraBackup--| |-xtrabackup-C程序，支持InnoDB、XtraDB，可以执行完整备份和增量备份
+            |-|
+              |-innobackupex-以perl封装的xtrabackup，支持MyISAM引擎，但是只能完整备份
 
 
 注：1、innodb引擎不适合物理备份，因为innodb引擎存储对数据处理分为数据和事务日志两部分，只备份数据有可能会
