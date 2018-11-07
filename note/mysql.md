@@ -34,6 +34,19 @@ RDBMS--> relationship database manager system
 索引
 优点：加快查询速度
 缺点：减慢写入速度，占用磁盘空间
+                                                                            |-有关于存储数据的信息
+                                                                |-元数据   -|-数据库名、表名、列的类型、访问权限
+                                                                |           |-该信息的其他数据（数据字典、系统目录）
+            |-information_schema   -|-提供了访问元数据的方式   -|-是个内存数据库，没有对应的磁盘文件
+            |                                                   |-MySQL服务维护的信息
+            |                       |-核心数据库
+            |-mysql                -|-负责存储数据库的用户、权限设置、关键字等mysql自己需要使用的控制和管理信息。 
+            |                       |-不可以删除
+MySQL默认库-|
+            |-performance_schema   -|-收集MySQL服务器性能参数
+            |-sys
+
+
 
 
                                     |-一个表中可以有多个index字段
@@ -229,8 +242,9 @@ XtraDB是percona开发的适用于生产环境的在线热备引擎，可以理�
 
             |-在线热备份工具，不锁表，适合生产环境
 XtraBackup--| |-xtrabackup-C程序，支持InnoDB、XtraDB，可以执行完整备份和增量备份
-            |-|
-              |-innobackupex-以perl封装的xtrabackup，支持MyISAM引擎，但是只能完整备份
+            |-|              |-以perl语言封装的xtrabackup
+              |-innobackupex-|-支持InnoDB、XtraDB引擎，可以执行完整备份和增量备份
+                             |-可以支持MyISAM引擎，但是每次备份都是完整备份，不支持增量备份
 
 
 注：1、innodb引擎不适合物理备份，因为innodb引擎存储对数据处理分为数据和事务日志两部分，只备份数据有可能会
