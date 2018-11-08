@@ -44,7 +44,7 @@ RDBMS--> relationship database manager system
             |                       |-不可以删除
 MySQL默认库-|
             |-performance_schema   -|-收集MySQL服务器性能参数
-            |-sys
+            |-sys                  -|-系统数据库，快速了解系统元数据信息
 
 
 
@@ -245,6 +245,19 @@ XtraBackup--| |-xtrabackup-C程序，支持InnoDB、XtraDB，可以执行完整�
             |-|              |-以perl语言封装的xtrabackup
               |-innobackupex-|-支持InnoDB、XtraDB引擎，可以执行完整备份和增量备份
                              |-可以支持MyISAM引擎，但是每次备份都是完整备份，不支持增量备份
+
+                                            |-ib_logfile0  -|
+                |-innodb/xtradb-|-事务日志 -|-ib_logfile1  -|-以提交的sql命令
+                |                           |-ibdata1      -|-未提交的sql命令和日志序列号LSN
+innobackupex   -|
+                |               |-xtrabackup_binlog_info   -|-当前备份的binlog日志文件和结束位置
+                |               |-xtrabackup_checkpoints   -|-当前备份的日志序列号范围
+                |-完整增量备份 -|-ibdata1                  -|-当前日志序列号范围内未执行的sql命令（binary）
+                                |-xtrabackup_info          -|-当前备份执行时的参数信息
+                                |-xtrabackup_logfile       -|-当前日志序列号范围内已执行的sql命令（binary）
+                                |-backup_my.cnf            -|-执行备份的时候系统资源参数
+
+
 
 
 注：1、innodb引擎不适合物理备份，因为innodb引擎存储对数据处理分为数据和事务日志两部分，只备份数据有可能会
