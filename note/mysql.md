@@ -265,3 +265,43 @@ innobackupex   -|
     2、生产环境下备份数据的方法是计划任务+脚本、搭建MySQL主从同步
     3、生产环境最常用的是完整备份+增量备份
     4、为什么有时候设置了binlog日志的大小不管用，因为在处理大事务的时候所有日志会写入到同一个binlog日志中
+
+---------------------------------------------------------------------------------------------------------
+MySQL主从同步
+
+                                                    |-启动binlog日志
+            |-主库master   -|-被客户端访问的数据库 -|-用户授权（slaveuser-replication slave）
+            |                                       |-查看正在使用的binlog日志
+主从同步  --|
+            |                                       |-验证主库授权用户
+            |                                       |-指定server_id
+            |-从库slave    -|-同步主的数据到本机   -|               |-change master to
+                                                    |               |-master_host='master_ip',
+                                                    |               |-master_user='slaveusername'
+                                                    |-指定主库信息 -|-master_password='slaveuserpassword',
+                                                    |               |-master_log_file='master_log',
+                                                    |               |-master_log_pos=master_log_num;
+                                                    |-查看从库状态
+
+        |-Slave_IO_Running -|-复制主库binlog日志文件里的sql命令到本机的relay-log中
+工作原理|
+        |-Slave_SQL_Running-|-执行本机relay-log中的sql命令，重现master的数据操作记录
+                
+                |-master.info              -|-主库的连接信息
+                |-relay-log.info           -|-从库的relay编号、偏移量、主库数据来源、位置
+从库新增文件   -|
+                |-mariadb-relay-bin.index  -|-中继日志索引
+                |-mariadb-relay-bin.000000 -|-中继日志 -|-和主库binlog日志相同的sql命令
+临时停止同步：stop slave；
+永久停止同步：reset slave；
+
+                            
+                            |-基础 -|-一主一从
+                |-结构模式 -|
+                |           |       |-一主多从
+                |           |-扩展 -|-互为主从
+                |                   |-链式复制
+                |           
+主从同步模式   -|           |-异步复制
+                |-复制模式 -|-全同步复制
+                            |-半同步复制
