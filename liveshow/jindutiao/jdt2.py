@@ -1,6 +1,7 @@
 #!/usr/bin/env python3
 
 import time
+import sys
 
 def rotato_line(n=20):
     i = 0
@@ -9,7 +10,10 @@ def rotato_line(n=20):
         right = '#' * (n-i)
         print("\r%s@%s" % (left, right), end="")
         i = i + 1
-        time.sleep(0.2)
+        try:
+            time.sleep(0.2)
+        except KeyboardInterrupt:
+            sys.exit()
         if i == n+1:
             i = 0
 
