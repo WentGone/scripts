@@ -522,8 +522,12 @@ MySQL视图  -|-优点 -|-安全     -|-用户只能看到视图中的数据
             |           |           |-改:update viewname set 
             |           |           |-查:select * from viewname
             |
-            |           |
-            |           |
-            |-高级应用 -|
+            |           |-字段名别名 as
+            |           |-替换原有视图 or replace
+            |-高级应用 -|           |-MERAGE   -|-视图名直接用视图的公式替换，把视图公式合并到了select中
+                        |-ALGORITHM-|-TEMPTABLE-|-先执行视图得到结果，然后把结果暂时保存在内存中，然后外层select调用内存中的结果
+                        |           |-UNDEFINED-|-表示默认使用MERAGE
                         |
-                        |
+                        |           |-WITH CHECK OPTION
+                        |-检查方式 -|-LOCAL：仅检查当前视图的限制
+                                    |-CASCADED：同时要满足基表的限制
