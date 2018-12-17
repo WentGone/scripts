@@ -231,5 +231,15 @@ Redis  -|-使用 -|-set、get、del、ttl、flushall、type
         |           |           |-setbit   -|-以位的方式存储数据（节约空间）
         |           |           |-decr     -|-自减
         |           |           |-incr     -|-自增
-        |-数据类型 -|-list
-                    |-hash
+        |           |
+        |           |           |-对比与栈结构（先进后出）
+        |           |           |-lpush、lrange
+        |-数据类型 -|-list     -|-lpop、llen
+                    |           |-lindex、lset
+                    |           |-rpush、rpop
+                    |
+                    |           |-定义的变量可以存储多组key/values
+                    |           |-hset、hget
+                    |-hash     -|-hmset、hmget、hkeys、hvals
+                                |-hgetall
+                                |-hdel
