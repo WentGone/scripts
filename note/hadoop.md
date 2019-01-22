@@ -108,24 +108,120 @@ Hadoop -|
         |       |-是Hadoop的一个通用的资源管理系统
         |       |-核心思想是将JobTracker和TaskTracker进行分离
         |-YARN -|
-        |       |                           |-处理客户端请求
-        |       |                           |-启动/监控ApplicationMaster
-        |       |       |-ResourceManager  -|
-        |       |       |                   |-监控NodeManager
-        |       |       |                   |-资源分配调度
-        |       |       |
-        |       |       |               |-单个节点上的资源管理
-        |       |       |-NodeManager  -|-处理来自ResourceManager的命令
-        |       |       |               |-处理来自ApplicationMaster的命令
-        |       |-组件 -|
-        |               |           |-对任务的运行环境的抽象，封装了CPU、内存等
-        |               |-Container-|
-        |               |           |-多维资源以及环境变量、启动命令等任务运行相关的信息资源分配与调度
-        |               |
-        |               |                   |-数据切分
-        |               |-ApplicationMaster-|-为应用程序申请资源，并分配给内部任务
-        |               |                   |-任务监控与容错
-        |               |
-        |               |           |-用户与Yarn交互的客户端程序
-        |               |-Client   -|
-        |                           |-提交应用程序、监控应用程序状态、杀死应用程序等
+                |                           |-处理客户端请求
+                |                           |-启动/监控ApplicationMaster
+                |       |-ResourceManager  -|
+                |       |                   |-监控NodeManager
+                |       |                   |-资源分配调度
+                |       |
+                |       |               |-单个节点上的资源管理
+                |       |-NodeManager  -|-处理来自ResourceManager的命令
+                |       |               |-处理来自ApplicationMaster的命令
+                |-组件 -|
+                        |           |-对任务的运行环境的抽象，封装了CPU、内存等
+                        |-Container-|
+                        |           |-多维资源以及环境变量、启动命令等任务运行相关的信息资源分配与调度
+                        |
+                        |                   |-数据切分
+                        |-ApplicationMaster-|-为应用程序申请资源，并分配给内部任务
+                        |                   |-任务监控与容错
+                        |
+                        |           |-用户与Yarn交互的客户端程序
+                        |-Client   -|
+                                    |-提交应用程序、监控应用程序状态、杀死应用程序等
+-------------------------------------------------------------------------------------------------------------------------------------------
+
+完全分布式集群：
+
+
+            |-软件目录 
+            |-/usr/local/hadoop/
+            |
+            |                                               |-JAVA_HOME：openjdk的安装目录
+            |                               |-hadoop-env.sh-|
+            |                               |               |-HADOOP_CONF_DIR：hadoop配置文件路径
+            |                               |        
+            |                               |                       |-fs.defaultFS：默认文件系统
+            |                               |       |-core-site.xml-|
+            |                               |       |               |-hadoop.tmp.dir：文件存储位置
+            |                               |       |       
+            |                               |       |               |-dfs.namenode.http-address：namenode地址
+完全分布式 -|-配置文件路径                 -|-HDFS -|-hdfs-site.xml-|-dfs.namenode.secondary.http-address：secondarynamenode地址
+            |-/usr/local/hadoop/etc/hadoop  |       |               |-dfs.replication：存储文件副本数
+            |                               |       |       
+            |                               |       |-slaves   -|-标识出所有的datanode主机名
+            |                               |
+            |                               |-MapReduce-|-mapred-site.xml  -|-mapreduce.framework.name：定义资源管理类(local|yarn)
+            |                               |
+            |                               |                       |-yarn.resourcemanager.hostname：指定resourcemanager节点主机名
+            |                               |-YARN -|-yarn-site.xml-|
+            |                                                       |-yarn.nodemanager.aux-services：指定计算节点采用的mr算法名
+            |
+            |                                   |-总脚本，可调用hdfs和yarn的脚本
+            |                                   |-hadoop version
+            |                       |-hadoop   -|-hadoop jar jar包路径
+            |                       |           |-hadoop fs :以hdfs的客户端身份运行，直接回车提示出来的命令均可用
+            |                       |        
+            |                       |       |-hdfs namenode -format：初始化namenode
+            |                       |       |-hdfs dfsadmin -report：检查hdfs集群状态
+            |-工具路径             -|-hdfs -|
+            |-/usr/local/hadoop/bin |       |-hdfs dfsadmin -setBalancerBandwidth：设置平衡数据带宽
+            |                       |       
+            |                       |-yarn -|-yarn node -list：检查yarn集群状态
+            |               
+            |                                   |-start-all.sh：启动所有服务(hdfs&yarn)
+            |                           |-all  -|   
+            |                           |       |-stop-all.sh：停止所有服务
+            |                           |
+            |                           |       |-start-dfs.sh：启动hdfs服务
+            |                           |       |-stop-dfs.sh：停止hdfs服务
+            |-服务路径                 -|-hdfs -|       
+            |-/usr/local/hadoop/sbin    |       |
+            |                           |
+            |                           |       |-start-yarn.sh：启动yarn服务
+            |                           |-yarn -|
+            |                                   |-start-yarn.sh：停止yarn服务
+            |
+            |               |-namenode -|-/var/hadoop/dfs/name
+            |-数据路径     -|-secondarynamenode-|-/var/hadoop/dfs/namesecondary
+            |-/var/hadoop   |-datanode -|-/var/hadoop/dfs/data
+            |
+            |           |-http://namenode:50070            -|-namenode管理页面         -|
+            |           |-http://secondarynamenode:50090   -|-secondarynamenode管理页面-|           |namenode/secondarynamenode/resourcemanger
+            |-页面管理 -|-http://resourcemange:8088        -|-resourcemanager管理页面  -|-注意角色 -|
+            |           |-http://datanode:50075            -|-datanode管理页面         -|           |datanode/nodemanager
+            |           |-http://nodemanager:8042          -|-nodemanager管理页面      -|
+            |
+            |                           |-配置环境、安装java
+            |                           |-复制namenode配置文件到配置文件目录下
+            |                           |-修改namenode的salves文件
+            |                   |-增加 -|-启动该节点的datanode
+            |                   |       |-设置同步带宽
+            |                   |       |-查看hdfs集群状态
+            |                   |       
+            |                   |
+            |           |-hdfs -|-删除
+            |           |-(数据)|
+            |           |       |-修复
+            |-节点管理 -|
+            |           |
+            |           |-yarn
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
