@@ -166,6 +166,7 @@ Hadoop -|
             |                       |       |-hdfs dfsadmin -report：检查hdfs集群状态
             |-工具路径             -|-hdfs -|
             |-/usr/local/hadoop/bin |       |-hdfs dfsadmin -setBalancerBandwidth：设置平衡数据带宽
+            |                       |       |-hdfs dfsadmin -refreshNodes：迁移需要下线节点的数据
             |                       |       
             |                       |-yarn -|-yarn node -list：检查yarn集群状态
             |               
@@ -175,12 +176,14 @@ Hadoop -|
             |                           |
             |                           |       |-start-dfs.sh：启动hdfs服务
             |                           |       |-stop-dfs.sh：停止hdfs服务
-            |-服务路径                 -|-hdfs -|       
-            |-/usr/local/hadoop/sbin    |       |
+            |-服务路径                 -|-hdfs -|-hadoop-daemon.sh start|stop datanode：控制datanode服务       
+            |-/usr/local/hadoop/sbin    |       |-start-balancer.sh：启动平衡数据服务
+            |                           |       |-stop-balancer.sh：关闭平衡数据服务
             |                           |
             |                           |       |-start-yarn.sh：启动yarn服务
+            |                           |       |-stop-yarn.sh：停止yarn服务
             |                           |-yarn -|
-            |                                   |-start-yarn.sh：停止yarn服务
+            |                                   |-yarn-daemon.sh start|stop nodemanager：启停nodemanager服务
             |
             |               |-namenode -|-/var/hadoop/dfs/name
             |-数据路径     -|-secondarynamenode-|-/var/hadoop/dfs/namesecondary
@@ -194,18 +197,72 @@ Hadoop -|
             |
             |                           |-配置环境、安装java
             |                           |-复制namenode配置文件到配置文件目录下
-            |                           |-修改namenode的salves文件
+            |                           |-修改namenode的slaves文件
             |                   |-增加 -|-启动该节点的datanode
             |                   |       |-设置同步带宽
             |                   |       |-查看hdfs集群状态
             |                   |       
-            |                   |
-            |           |-hdfs -|-删除
-            |           |-(数据)|
-            |           |       |-修复
+            |                   |       |-配置需要删除的节点
+            |                   |       |                       |-Normal    正常
+            |           |-hdfs -|-删除 -|-迁移数据 -|-节点状态 -|-Decommissioned in Program 数据库正在迁移
+            |           |-(数据)|       |                       |-Decommissioned    数据迁移完成（此状态下才能下线节点）
+            |           |       |       |-完成数据迁移以后停止该节点的datanode服务
+            |           |       |
+            |           |       |       |-与添加节点步骤基本一致
+            |           |       |       |-替换节点的ip和主机名与损坏节点一致
+            |           |       |-修复 -|-启动服务  datanode
+            |           |               |-自动恢复数据
+            |           |               |-恢复时间与数据量成正比
             |-节点管理 -|
+            |           |       |-增加 -|-启动NodeManager服务
+            |           |-yarn -|
+            |                   |-删除 -|-关闭NodeManager服务
+            |
+            |           |-组建一台机器，作为hdfs客户端和nfs服务的结合体，cli可以通过挂载nfs的方式访问hdfs集群，仅支持nfsv3
             |           |
-            |           |-yarn
+            |           |       |-不支持随机写入，顺序写入
+            |-NFS网关  -|-特性 -|-在非安全模式下，运行网关的用户是代理用户
+                        |       |-安全模式下，Kerberos keytabs中的用户是代理用户
+                        |       |-保证nfsgw的代理用户和namenode上的用户名、uid、gid必须一致
+                        |
+                        |       |-配置nfsgw的hosts，通联namenode和所有datanode
+                        |       |-添加代理用户，nfsgw和namenode保持一致
+                        |       |-停止集群
+                        |-步骤 -|-修改core-site.xml配置文件
+                                |-同步文件
+                                |-启动集群
+、                              |-查看状态
+--------------------------------------------------------------------------------------------------------------------------------------
+Zookeeper集群：
+
+    |-开源的分布式应用程序协调服务
+    |-用于保证数据在集群间的事物一致性
+    |
+    |       |-集群分布式锁（共享锁、排他锁）
+    |-功能 -|-集群统一命名服务
+    |       |-分布式协调服务
+    |
+    |                                   |-接受所有Follower的提案请求
+    |                       |-Leader   -|-统一协调发起提案的投票
+    |                       |           |-负责与所有的Follower进行内部的数据交换
+    |                       |
+    |                       |           |-直接为客户端服务
+    |               |-角色 -|-Follower -|-参与提案投票
+    |               |       |           |-与Leader进行数据交换
+    |               |       |
+    |               |       |           |-直接为客户端服务
+    |               |       |-Observer -|-不参与提案的投票
+    |               |                   |-与Leader进行数据交换
+    |               |
+    |               |       |-服务启动时没有角色（looking）
+    |               |       |-通过选举产生
+    |               |       |-选举产生一个Leader，剩下的是Follower
+zk -|-角色与特性   -|-选举 -|-超过半数投票才能成为Leader
+    |               |       |-m>=n/2+1
+    |               |       |-Follower死机过多，剩余机器不到半数加一，集群崩溃
+    |               |       |-Observer不计算在投票设备的总数里
+
+
 
 
 
