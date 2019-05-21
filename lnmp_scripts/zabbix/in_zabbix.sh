@@ -116,6 +116,16 @@ set_nginx(){
     sed -ri '/gzip/a\fastcgi_buffer_size 32k;' /usr/local/nginx/conf/nginx.conf
     sed -ri '/gzip/a\fastcgi_buffers 8 16K;' /usr/local/nginx/conf/nginx.conf
 }
+#修改apache配置文件
+set_apache(){
+    mkdir -p /var/www/zabbix/
+    cat > /etc/httpd/conf.d/00-zabbix.conf << EOF
+<VirtualHost *:80>
+    ServerName "monitor.tedu.cn"
+    DocumentRoot "/var/www/zabbix/"
+</VirtualHost>
+EOF 
+}
 
 #修改php配置文件
 set_php(){
@@ -159,14 +169,8 @@ platform(){
         echo "START HTTPD SERVICE"
         
         set_php
-        
-        mkdir -p /var/www/zabbix/
-        cat > /etc/httpd/conf.d/00-zabbix.conf << EOF
-<VirtualHost *:80>
-    ServerName "monitor.tedu.cn"
-    DocumentRoot "/var/www/zabbix/"
-</VirtualHost>
-EOF 
+        set_apache
+
         systemctl enable httpd &> /dev/null
         systemctl start httpd &> /dev/null
         
