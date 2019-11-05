@@ -1,0 +1,2 @@
+wget批量下载
+wget -c -r -np -k -L -p -A '通配符' 网址

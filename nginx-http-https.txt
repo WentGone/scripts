@@ -1,0 +1,92 @@
+nginx代理http跳https的两个办法
+1、前台调度器跳转
+前台配置文件
+http {
+    upstream webs {
+        server 192.168.1.2:443;
+    }
+}
+
+server {
+    listen 80;
+    servername localhost;
+    rewrite ^/(.*)$ https://192.168.1.1/$1 permanent;
+}
+server {
+    listen       443 ssl;
+    server_name  localhost;
+    ssl_certificate      cert.pem;
+    ssl_certificate_key  cert.key;
+    ssl_session_cache    shared:SSL:1m;
+    ssl_session_timeout  5m;
+    ssl_ciphers  HIGH:!aNULL:!MD5;
+    ssl_prefer_server_ciphers  on;
+    location / {
+        proxy_pass https://webs;
+    }
+}
+
+后台配置文件
+server {
+    listen       443 ssl;
+    server_name  localhost;
+
+    ssl_certificate      cert.pem;
+    ssl_certificate_key  cert.key;
+
+    ssl_session_cache    shared:SSL:1m;
+    ssl_session_timeout  5m;
+
+    ssl_ciphers  HIGH:!aNULL:!MD5;
+    ssl_prefer_server_ciphers  on;
+
+    location / {
+        root   html;
+        index  index.html index.htm;
+    }
+}
+
+
+
+2、后台真实服务器跳转
+前台配置文件
+http {
+    upsteam webs {
+        server 192.168.1.2:80;
+    }
+}
+server {
+    listen 80;
+    server_name localhost;
+    location / {
+        proxy_pass http://webs;
+    }
+}
+后台配置文件
+http {
+    server {
+        listen 80;
+        server_name localhost;
+        rewrite ^/(.*)$ https://192.168.1.2/$1 permanent;
+    }
+    server {
+         listen       443 ssl;
+         server_name  localhost;
+     
+         ssl_certificate      cert.pem;
+         ssl_certificate_key  cert.key;
+     
+         ssl_session_cache    shared:SSL:1m;
+         ssl_session_timeout  5m;
+     
+         ssl_ciphers  HIGH:!aNULL:!MD5;
+         ssl_prefer_server_ciphers  on;
+     
+         location / {
+             root   html;
+             index  index.html index.htm;
+         }
+     }
+
+}
+这两种方式都行，第一种比较正常，第二种需要不断清空浏览器缓存，有时候不轮询，但是关掉一个后台，能切换到另外一个后台
