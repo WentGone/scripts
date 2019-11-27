@@ -1,0 +1,30 @@
+#修改配置文件，开启binlog日志
+[root@master ~]# vim /etc/my.cnf
+[mysqld]
+server_id = 1
+log_bin = "master"
+binlog_format = "mixed"
+#保存退出，重启服务
+[root@master ~]# systemctl restart mysqld
+#登录MySQL服务，重置master信息，授权主从同步用户，创建mydb数据库，查看二进制文件信息
+[root@master ~]# mysql -hlocalhost -uroot -p123456
+
+mysql> reset master;
+
+mysql> grant replication slave on *.* to repluser@'192.168.1.2' identified by '123456';
+
+mysql> create database mydb;
+
+mysql> show master status;
++---------------+----------+--------------+------------------+-------------------+
+| File          | Position | Binlog_Do_DB | Binlog_Ignore_DB | Executed_Gtid_Set |
++---------------+----------+--------------+------------------+-------------------+
+| master.000001 |      154 |              |                  |                   |
++---------------+----------+--------------+------------------+-------------------+
+
+mysql> exit
+#备份主服务当前已有数据
+[root@master ~]# mysqldump -hlocalhost -uroot -p'123456' --all-databases > /root/all.bak
+#发送备份数据到从服务器
+[root@master ~]# scp /root/all.bak slave:/root 
+#稍后验证同步结构

@@ -1,0 +1,2 @@
+#验证从服务器表是否存在并查询表记录
+[root@slave ~]# mysql -hlocalhost -uroot -p'123456' -e "select count(*) from mydb.mytb;"

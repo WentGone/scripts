@@ -1,0 +1,95 @@
+#解压备份数据包
+[root@slave ~]# tar -xvf allbak.tar.gz -C /
+
+#做恢复数据准备工作
+[root@slave ~]# innobackupex --apply-log --redo-only /allbak/
+...
+191122 17:48:43 completed OK!
+
+#停止从服务器正在运行的MySQL服务
+[root@slave ~]# systemctl stop mysqld
+
+#清空从服务器的数据磁盘文件
+[root@slave ~]# rm -rf /var/lib/mysql/*
+
+#恢复主服务器备份过来的数据
+[root@slave ~]# innobackupex --copy-back /allbak/
+...
+191122 17:50:40 completed OK!
+
+#启动MySQL服务
+[root@slave ~]# chown -R mysql.mysql /var/lib/mysql/
+[root@slave ~]# systemctl restart mysqld
+
+#确认主服务器二进制日志信息
+root@slave ~]# cat /var/lib/mysql/xtrabackup_info 
+uuid = 66948db5-0d0c-11ea-8172-525400a4379a
+name = 
+tool_name = innobackupex
+tool_command = --slave-info --user root --password=... 123456 --no-timestamp /allbak
+tool_version = 2.4.16
+ibbackup_version = 2.4.16
+server_version = 5.7.17-log
+start_time = 2019-11-22 17:42:03
+end_time = 2019-11-22 17:42:29
+lock_time = 0
+binlog_pos = filename 'master.000001', position '34295'
+innodb_from_lsn = 0
+innodb_to_lsn = 2593129
+partial = N
+incremental = N
+format = file
+compact = N
+compressed = N
+encrypted = N
+
+[root@slave ~]# cat /var/lib/mysql/xtrabackup_info | grep binlog
+binlog_pos = filename 'master.000001', position '34295'
+
+#查看主从数据库mydb库下mytb表的表记录数
+[root@master ~]# mysql -hlocalhost -uroot -p'123456' -e "select count(*) from mydb.mytb;"
++----------+
+| count(*) |
++----------+
+|     3600 |
++----------+
+
+[root@slave ~]# mysql -hlocalhost -uroot -p'123456' -e "select count(*) from mydb.mytb;"
++----------+
+| count(*) |
++----------+
+|      220 |
++----------+
+
+#登录从库设置主从同步
+[root@slave ~]# mysql -hlocalhost -uroot -p'123456'
+mysql> reset slave;
+
+mysql> change master to
+    -> master_host='192.168.1.1',
+    -> master_user='repluser',
+    -> master_password='123456',
+    -> master_log_file='master.000001',
+    -> master_log_pos=34295;
+
+mysql> start slave;
+
+mysql> show slave status\G
+             Slave_IO_Running: Yes
+            Slave_SQL_Running: Yes
+
+mysql> exit
+#验证同步结果
+[root@master ~]# mysql -hlocalhost -uroot -p'123456' -e "select count(*) from mydb.mytb;"
++----------+
+| count(*) |
++----------+
+|     5030 |
++----------+
+
+[root@slave ~]# mysql -hlocalhost -uroot -p'123456' -e "select count(*) from mydb.mytb;"
++----------+
+| count(*) |
++----------+
+|     5045 |
++----------+

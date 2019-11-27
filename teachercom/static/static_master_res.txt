@@ -1,0 +1,13 @@
+#创建mydb库下的mytb表
+[root@master ~]# mysql -hlocalhost -uroot -p'123456'
+mysql> use mydb;
+Database changed
+mysql> create table mytb(
+    -> id int(2) primary key auto_increment,
+    -> name char(20) not null,
+    -> age int(2) 
+    -> );
+mysql> exit
+
+#验证表是否存在并查询表记录
+[root@master ~]# mysql -hlocalhost -uroot -p'123456' -e "select count(*) from mydb.mytb;"

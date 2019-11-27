@@ -1,0 +1,43 @@
+#修改配置文件
+[root@slave ~]# vim /etc/my.cnf
+server_id = 2
+
+#重启服务
+[root@slave ~]# systemctl restart mysqld
+
+#还原主服务器备份过来的数据
+[root@slave ~]# mysql -hlocalhost -uroot -p'123456' < /root/all.bak 
+
+#设置主从同步
+[root@slave ~]# mysql -hlocalhost -uroot -p'123456'
+
+mysql> show databases;
++--------------------+
+| Database           |
++--------------------+
+| information_schema |
+| mydb               |
+| mysql              |
+| performance_schema |
+| sys                |
++--------------------+
+
+mysql> reset slave;
+
+mysql> change master to
+    -> master_host='192.168.1.1',
+    -> master_user='repluser',
+    -> master_password='123456',
+    -> master_log_file='master.000001',
+    -> master_log_pos=154;
+
+mysql> start slave;
+
+mysql> show slave stauts\G
+             Slave_IO_Running: Yes
+            Slave_SQL_Running: Yes
+
+mysql> exit
+
+#主从结构搭建成功
+#稍后验证主从同步结构
