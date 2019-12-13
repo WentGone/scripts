@@ -1,0 +1,11 @@
+[root@slave ~]# mysql -hlocalhost -uroot -p'123456'
+mysql> reset slave;
+
+mysql> change master to
+    -> master_host='主IP地址',
+    -> master_user='同步用户',
+    -> master_password='同步用户密码',
+    -> master_log_file='binlog日志文件名',
+    -> master_log_pos='文件指针';
+
+mysql> start slave;

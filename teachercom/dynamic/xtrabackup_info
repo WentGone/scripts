@@ -1,0 +1,21 @@
+uuid = 6c90b907-1266-11ea-9dc1-525400a4379a
+name = 
+tool_name = innobackupex            //工具名
+tool_command = --slave-info --user root --password=... 123456 --no-timestamp /allbak
+//主服务器完全备份命令及选项
+tool_version = 2.4.16               //innobackupex版本
+ibbackup_version = 2.4.16       
+server_version = 5.7.17-log         //MySQL版本
+start_time = 2019-11-29 13:09:00    //备份开始时间
+end_time = 2019-11-29 13:09:30      //备份结束时间
+lock_time = 0                       //日志锁定时间
+binlog_pos = filename 'master.000001', position '5854'      //binlog日志信息
+innodb_from_lsn = 0
+innodb_to_lsn = 2630471
+partial = N
+incremental = N
+format = file
+compact = N
+compressed = N
+encrypted = N
+

@@ -1,0 +1,29 @@
+#还原主服务器备份过来的数据
+[root@slave ~]# mysql -hlocalhost -uroot -p'123456' < /root/run.sql
+
+#设置主从同步
+[root@slave ~]# mysql -hlocalhost -uroot -p'123456'
+
+mysql> select count(*) from mydb.mytb;
++----------+
+| count(*) |
++----------+
+|       19 |
++----------+
+
+
+mysql> reset slave;
+
+mysql> change master to
+    -> master_host='192.168.1.1',
+    -> master_user='repluser',
+    -> master_password='123456',
+    -> master_log_file='master.000001',
+    -> master_log_pos=154;
+
+mysql> start slave;
+
+msyql> exit
+
+#查看slave的线程工作状态
+[root@slave ~]# mysql -hlocalhost -uroot -p'123456' -e "show slave status\G" 2> /dev/null | grep -i "running:"

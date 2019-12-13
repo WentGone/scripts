@@ -1,0 +1,9 @@
+          |-master线程（1个）
+          |-lock锁监控线程（1个）
+          |-错误线程（1个）
+后台线程- |
+          |                |-insert buffer thread（1个）
+          |                |-log thread（1个）
+          |-IO线程（10个）-|  
+                           |-read thread（4个）
+                           |-write thread（4个）

@@ -1,0 +1,15 @@
+#登录MySQL服务，查看二进制文件信息
+[root@master ~]# mysql -hlocalhost -uroot -p123456
+
+mysql> show master status;
++---------------+----------+--------------+------------------+-------------------+
+| File          | Position | Binlog_Do_DB | Binlog_Ignore_DB | Executed_Gtid_Set |
++---------------+----------+--------------+------------------+-------------------+
+| master.000001 |      154 |              |                  |                   |
++---------------+----------+--------------+------------------+-------------------+
+
+mysql> exit
+#备份主服务当前已有数据
+[root@master ~]# mysqldump -hlocalhost -uroot -p'123456' --all-databases > /root/run.sql
+#发送备份数据到从服务器
+[root@master ~]# scp /root/run.sql slave:/root 

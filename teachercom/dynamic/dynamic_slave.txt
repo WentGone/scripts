@@ -22,27 +22,6 @@
 [root@slave ~]# systemctl restart mysqld
 
 #确认主服务器二进制日志信息
-root@slave ~]# cat /var/lib/mysql/xtrabackup_info 
-uuid = 66948db5-0d0c-11ea-8172-525400a4379a
-name = 
-tool_name = innobackupex
-tool_command = --slave-info --user root --password=... 123456 --no-timestamp /allbak
-tool_version = 2.4.16
-ibbackup_version = 2.4.16
-server_version = 5.7.17-log
-start_time = 2019-11-22 17:42:03
-end_time = 2019-11-22 17:42:29
-lock_time = 0
-binlog_pos = filename 'master.000001', position '34295'
-innodb_from_lsn = 0
-innodb_to_lsn = 2593129
-partial = N
-incremental = N
-format = file
-compact = N
-compressed = N
-encrypted = N
-
 [root@slave ~]# cat /var/lib/mysql/xtrabackup_info | grep binlog
 binlog_pos = filename 'master.000001', position '34295'
 
@@ -80,16 +59,3 @@ mysql> show slave status\G
 
 mysql> exit
 #验证同步结果
-[root@master ~]# mysql -hlocalhost -uroot -p'123456' -e "select count(*) from mydb.mytb;"
-+----------+
-| count(*) |
-+----------+
-|     5030 |
-+----------+
-
-[root@slave ~]# mysql -hlocalhost -uroot -p'123456' -e "select count(*) from mydb.mytb;"
-+----------+
-| count(*) |
-+----------+
-|     5045 |
-+----------+
